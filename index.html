@@ -293,6 +293,7 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
 .step-flow .sf-arrow{color:var(--ink-4)}
 @media(max-width:600px){.tool-grid{grid-template-columns:1fr}.step-flow{display:none}}
 @media print{#pane-goal{display:none!important}}
+@media print{.print-hide{display:none!important}}
 </style>
 </head>
 <body>
@@ -2101,6 +2102,30 @@ function resetData(){
   $('rx_grid').innerHTML='';$('diag_area').innerHTML='';
   $('score_num').textContent='—';$('score_msg').textContent='진단을 실행해주세요';
 }
+
+// ─── 인쇄 시 빈 행 숨김 ─────────────────────────────────
+window.addEventListener('beforeprint',()=>{
+  ['#pane-cashflow','#pane-balance'].forEach(sel=>{
+    const pane=document.querySelector(sel);
+    if(!pane)return;
+    pane.querySelectorAll('tr.sub').forEach(tr=>{
+      const inp=tr.querySelector('input[type="number"]');
+      if(!inp||(parseFloat(inp.value)||0)===0) tr.classList.add('print-hide');
+    });
+    pane.querySelectorAll('tr.memo').forEach(tr=>tr.classList.add('print-hide'));
+    pane.querySelectorAll('tr.cat').forEach(cat=>{
+      let nx=cat.nextElementSibling,vis=false;
+      while(nx&&!['cat','sum','tot','net','sav'].some(c=>nx.classList.contains(c))){
+        if(nx.classList.contains('sub')&&!nx.classList.contains('print-hide')){vis=true;break;}
+        nx=nx.nextElementSibling;
+      }
+      if(!vis)cat.classList.add('print-hide');
+    });
+  });
+});
+window.addEventListener('afterprint',()=>{
+  document.querySelectorAll('.print-hide').forEach(el=>el.classList.remove('print-hide'));
+});
 
 // ─── 초기화 ──────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
