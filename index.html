@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#1a1814">
-<title>IdentiFi — 나의 재무 건강 자가진단</title>
+<title>IdentiFi — 나의 재무 현황 자가진단</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <style>
@@ -304,7 +304,7 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
       <div class="brand-name">Identi<span>Fi</span></div>
     </div>
     <div class="hd-right">
-      <span class="hd-tag">나의 재무 건강 자가진단</span>
+      <span class="hd-tag">나의 재무 현황 자가진단</span>
     </div>
   </div>
 </header>
@@ -315,7 +315,7 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
     <button class="ntab on" onclick="sw('info')"><span class="step-dot">1</span>기본정보</button>
     <button class="ntab" onclick="sw('balance')"><span class="step-dot">2</span>자산·부채</button>
     <button class="ntab" onclick="sw('cashflow')"><span class="step-dot">3</span>수입·지출</button>
-    <button class="ntab" onclick="sw('diag')"><span class="step-dot">4</span>재무 건강진단</button>
+    <button class="ntab" onclick="sw('diag')"><span class="step-dot">4</span>재무 현황 진단</button>
     <button class="ntab" onclick="sw('goal')"><span class="step-dot">5</span>다음 단계</button>
   </div>
 </nav>
@@ -754,13 +754,13 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
   </div>
 
   <!-- ══════════════════════════════════════════
-       STEP 4  재무 건강진단
+       STEP 4  재무 현황 진단
   ══════════════════════════════════════════ -->
   <div id="pane-diag" class="pane">
     <!-- 건강 점수 -->
     <div class="score-wrap no-print" id="score_wrap">
       <div>
-        <div class="score-label">나의 재무 건강점수</div>
+        <div class="score-label">나의 재무현황 점수</div>
         <div class="score-num" id="score_num">—</div>
       </div>
       <div style="flex:1">
