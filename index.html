@@ -457,7 +457,6 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
             <tr class="sub"><td>정기적금</td><td class="r"><input class="il" type="number" id="a_savings" placeholder="0" oninput="calcBS()"></td></tr>
             <tr class="sub"><td>정기예금</td><td class="r"><input class="il" type="number" id="a_fixedep" placeholder="0" oninput="calcBS()"></td></tr>
             <tr class="sub"><td>연금보험 해약환급금</td><td class="r"><input class="il" type="number" id="a_pensionins" placeholder="0" oninput="calcBS()"></td></tr>
-            <tr class="sub"><td>ISA <span class="kr">한국</span><span class="tip" data-tip="개인종합자산관리계좌. 연 2,000만원 한도, 비과세 혜택">?</span></td><td class="r"><input class="il" type="number" id="a_isa" placeholder="0" oninput="calcBS()"></td></tr>
             <tr class="sub"><td>주택청약종합저축 <span class="kr">한국</span></td><td class="r"><input class="il" type="number" id="a_sub" placeholder="0" oninput="calcBS()"></td></tr>
             <tr id="asav_add_tr" class="no-print"><td colspan="2" style="padding:4px 12px;border-bottom:none"><button class="btn btn-s" onclick="addCustomRow('asav')" style="font-size:10px;padding:3px 10px;min-height:0">＋ 저축성 항목 추가</button></td></tr>
 
@@ -466,6 +465,7 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
             <tr class="sub"><td>해외주식·해외ETF</td><td class="r"><input class="il" type="number" id="a_fund" placeholder="0" oninput="calcBS()"></td></tr>
             <tr class="sub"><td>채권·신탁·펀드</td><td class="r"><input class="il" type="number" id="a_bond" placeholder="0" oninput="calcBS()"></td></tr>
             <tr class="sub"><td>연금저축·IRP <span class="kr">한국</span><span class="tip" data-tip="세액공제 받는 은퇴 적립 계좌. 연간 최대 900만원 공제 가능">?</span></td><td class="r"><input class="il" type="number" id="a_pension_acc" placeholder="0" oninput="calcBS()"></td></tr>
+            <tr class="sub"><td>ISA <span class="kr">한국</span><span class="tip" data-tip="개인종합자산관리계좌. 연 2,000만원 한도, 비과세 혜택. 내부 편입 자산에 따라 투자자산으로 분류">?</span></td><td class="r"><input class="il" type="number" id="a_isa" placeholder="0" oninput="calcBS()"></td></tr>
             <tr class="sub"><td>가상자산 (코인 등)</td><td class="r"><input class="il" type="number" id="a_crypto" placeholder="0" oninput="calcBS()"></td></tr>
             <tr id="ainv_add_tr" class="no-print"><td colspan="2" style="padding:4px 12px;border-bottom:none"><button class="btn btn-s" onclick="addCustomRow('ainv')" style="font-size:10px;padding:3px 10px;min-height:0">＋ 투자 항목 추가</button></td></tr>
             <tr class="sum"><td>금융자산 합계</td><td class="r" id="a_fin_total">0</td></tr>
@@ -977,8 +977,8 @@ function sw(name){
 // ─── 재무상태표 ──────────────────────────────────────────
 function calcBS(){
   const aLiq=v('a_cash')+v('a_demand')+v('a_cma');
-  const aSav=v('a_savings')+v('a_fixedep')+v('a_pensionins')+v('a_isa')+v('a_sub');
-  const aInv=v('a_stock')+v('a_fund')+v('a_bond')+v('a_pension_acc')+v('a_crypto');
+  const aSav=v('a_savings')+v('a_fixedep')+v('a_pensionins')+v('a_sub');
+  const aInv=v('a_stock')+v('a_fund')+v('a_bond')+v('a_pension_acc')+v('a_isa')+v('a_crypto');
   const sumCust=sec=>Array.from(document.querySelectorAll(`tr.custom-row[data-section="${sec}"] .cust-val`)).reduce((s,el)=>s+(parseFloat(el.value)||0),0);
   const aFin=aLiq+aSav+aInv+sumCust('aliq')+sumCust('asav')+sumCust('ainv');
   let aRE=v('a_home')+v('a_rentprop')+v('a_land')+sumCust('are');
@@ -1656,7 +1656,7 @@ function calcAll(){
   const finRatio=bs.aTotal>0?bs.aFin/bs.aTotal:0;
   const budgetRatio=iM>0?cf.totExpM/iM:0;
   const insRatio=iM>0?v('e_ins_y')/12/iM:0;
-  const investFlowM=(v('s_fund_y')+v('s_pen_y'))/12;
+  const investFlowM=(v('s_fund_y')+v('s_pen_y')+v('s_isa_y'))/12;
   const investFlowRatio=cf.savM>0?investFlowM/cf.savM:0;
   const ag=getAgeGroup();
 
