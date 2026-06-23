@@ -1658,7 +1658,7 @@ function calcAll(){
   const budgetRatio=iM>0?cf.totExpM/iM:0;
   const insRatio=iM>0?v('e_ins_y')/12/iM:0;
   const investFlowM=(v('s_fund_y')+v('s_pen_y')+v('s_isa_y'))/12;
-  const investFlowRatio=cf.savM>0?investFlowM/cf.savM:0;
+  const investFlowRatio=(cf.savM+cf.princM)>0?investFlowM/(cf.savM+cf.princM):0;
   const ag=getAgeGroup();
 
   let ratios;
