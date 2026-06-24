@@ -9,6 +9,7 @@
 <title>IdentiFi — 나의 재무 현황 자가진단</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@300;400;500;600&family=Noto+Sans+KR:wght@300;400;500&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
 <style>
 :root{
   --ink:#1a1814; --ink-2:#3d3a35; --ink-3:#7a776f; --ink-4:#b5b2a9;
@@ -567,24 +568,27 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
         <div style="height:2px;background:var(--border);margin:16px 0"></div>
         <!-- STEP 1: 파일 선택 -->
         <div id="ci_s1">
-          <div class="info-box" style="flex-direction:column;align-items:flex-start;gap:5px;margin-bottom:14px">
-            <b>💡 사용 방법</b>
-            <span>① 카드사 앱·홈페이지 → 이용내역 → <b>엑셀(xlsx) 또는 CSV 다운로드</b></span>
-            <span>② 아래에 파일 업로드 → 자동 분류 확인 → 반영</span>
-            <span style="color:var(--muted);font-size:11px">⚠️ 계좌 입출금 내역은 내부 이체 중복 문제가 있어요. 카드 이용내역만 사용하세요.</span>
-            <span style="color:var(--muted);font-size:11px">지원 카드사: 삼성·현대·신한·KB국민·롯데·우리·하나 등 주요 카드사 공통 형식</span>
+          <div id="ci_s1_drop">
+            <div class="info-box" style="flex-direction:column;align-items:flex-start;gap:5px;margin-bottom:14px">
+              <b>💡 사용 방법</b>
+              <span>① 카드사 앱·홈페이지 → 이용내역 → <b>엑셀(xlsx), CSV, 또는 PDF 다운로드</b></span>
+              <span>② 아래에 파일 업로드 → 자동 분류 확인 → 반영</span>
+              <span style="color:var(--muted);font-size:11px">⚠️ 계좌 입출금 내역은 내부 이체 중복 문제가 있어요. 카드 이용내역 위주로 사용하세요.</span>
+              <span style="color:var(--muted);font-size:11px">지원: 삼성·현대·신한·KB국민·롯데·우리·하나 등 주요 카드사 / 카카오뱅크 PDF (비밀번호: 생년월일 8자리)</span>
+            </div>
+            <div class="imp-drop" id="imp_drop"
+                 onclick="$('ci_file').click()"
+                 ondragover="event.preventDefault();this.classList.add('drag')"
+                 ondragleave="this.classList.remove('drag')"
+                 ondrop="event.preventDefault();this.classList.remove('drag');handleCardFile(event.dataTransfer.files[0])">
+              <div style="font-size:40px;margin-bottom:8px">📂</div>
+              <div style="font-weight:800;margin-bottom:4px">파일을 드래그하거나 클릭해서 선택</div>
+              <div style="font-size:12px;color:var(--muted)">.xlsx / .xls / .csv / .pdf 지원</div>
+            </div>
+            <input type="file" id="ci_file" accept=".xlsx,.xls,.csv,.pdf" style="display:none"
+                   onchange="handleCardFile(this.files[0])">
           </div>
-          <div class="imp-drop" id="imp_drop"
-               onclick="$('ci_file').click()"
-               ondragover="event.preventDefault();this.classList.add('drag')"
-               ondragleave="this.classList.remove('drag')"
-               ondrop="event.preventDefault();this.classList.remove('drag');handleCardFile(event.dataTransfer.files[0])">
-            <div style="font-size:40px;margin-bottom:8px">📂</div>
-            <div style="font-weight:800;margin-bottom:4px">파일을 드래그하거나 클릭해서 선택</div>
-            <div style="font-size:12px;color:var(--muted)">.xlsx / .xls / .csv 지원</div>
-          </div>
-          <input type="file" id="ci_file" accept=".xlsx,.xls,.csv" style="display:none"
-                 onchange="handleCardFile(this.files[0])">
+          <div id="ci_s1_picker" style="display:none"></div>
         </div>
         <!-- STEP 2: 미리보기 -->
         <div id="ci_s2" style="display:none">
@@ -1237,7 +1241,9 @@ function handleCardFile(file){
       }catch(err){alert('파일 읽기 실패:\n'+err.message);}
     };
     reader.readAsArrayBuffer(file);
-  } else {
+  } else if(ext==='pdf'){
+    parsePDFFile(file);
+  } else if(['csv','txt'].includes(ext)||!ext){
     const reader=new FileReader();
     reader.onload=e=>{
       const buf=new Uint8Array(e.target.result);
@@ -1261,6 +1267,53 @@ function handleCardFile(file){
       parseCardRows(rows);
     };
     reader.readAsArrayBuffer(file);
+  } else {
+    alert('지원하지 않는 파일 형식이에요.\n.xlsx / .xls / .csv 파일을 선택해주세요.');
+  }
+}
+
+async function parsePDFFile(file){
+  if(typeof pdfjsLib==='undefined'){
+    alert('PDF 파싱 라이브러리를 불러오는 중이에요. 인터넷 연결을 확인하고 잠시 후 다시 시도해주세요.');return;
+  }
+  const buf=await file.arrayBuffer();
+  await _parsePDFData(new Uint8Array(buf),'');
+}
+
+async function _parsePDFData(data,password){
+  try{
+    const pdf=await pdfjsLib.getDocument({data:data,password:password}).promise;
+    const allRows=[];
+    for(let p=1;p<=pdf.numPages;p++){
+      const page=await pdf.getPage(p);
+      const tc=await page.getTextContent();
+      const yMap={};
+      tc.items.forEach(item=>{
+        if(!item.str.trim())return;
+        const y=Math.round(item.transform[5]);
+        if(!yMap[y])yMap[y]=[];
+        yMap[y].push({x:item.transform[4],text:item.str.trim()});
+      });
+      Object.keys(yMap).sort((a,b)=>Number(b)-Number(a)).forEach(y=>{
+        const row=yMap[y].sort((a,b)=>a.x-b.x).map(i=>i.text).filter(Boolean);
+        if(row.length)allRows.push(row);
+      });
+    }
+    const totalText=allRows.flat().join('');
+    const koreanCount=(totalText.match(/[가-힣]/g)||[]).length;
+    if(koreanCount<10){
+      alert('PDF에서 한글 텍스트를 추출하지 못했어요.\n스캔 이미지로만 구성된 PDF는 지원되지 않아요.');
+      return;
+    }
+    parseCardRows(allRows);
+  }catch(err){
+    if(err.name==='PasswordException'){
+      const pw=prompt('이 PDF는 비밀번호로 보호되어 있습니다.\n\n카카오뱅크 PDF 비밀번호는 보통\n생년월일 8자리입니다 (예: 19900101)\n\n비밀번호를 입력하세요:');
+      if(pw===null)return;
+      await _parsePDFData(data,pw);
+    }else{
+      alert('PDF 읽기 실패:\n'+err.message);
+    }
   }
 }
 
@@ -1268,9 +1321,9 @@ function detectCardCols(headers){
   const n=h=>String(h).replace(/\s/g,'');
   const find=kws=>headers.findIndex(h=>kws.some(kw=>n(h).includes(kw)));
   return{
-    date:find(['이용일자','이용일','이용일시','거래일자','거래일','승인일','날짜','결제일']),
-    merchant:find(['가맹점명','가맹점','이용가맹점명','이용가맹점','이용처','상호명','상호','점포명','업소명']),
-    amount:find(['이용금액','승인금액','거래금액','결제금액','금액','청구금액','원화금액','KRW']),
+    date:find(['거래일시','거래일자','거래일','이용일자','이용일','이용일시','승인일자','승인일','날짜','결제일']),
+    merchant:find(['거래내용','거래메모','내용','가맹점명','이용가맹점명','이용가맹점','이용처','상호명','상호','점포명','업소명','가맹점']),
+    amount:find(['출금금액','출금','이용금액','승인금액','거래금액','결제금액','금액','청구금액','원화금액','KRW']),
   };
 }
 
@@ -1291,7 +1344,7 @@ function parseCardRows(allRows){
 function showColPicker(headers,rows,hdrIdx){
   window._cpRows=rows;window._cpHdr=hdrIdx;
   const opts=headers.map((h,i)=>`<option value="${i}">${h||(i+'열')}</option>`).join('');
-  $('ci_s1').innerHTML=`
+  $('ci_s1_picker').innerHTML=`
     <div class="warn-box">⚠️ 열 이름을 자동 감지하지 못했어요. 직접 선택해주세요.</div>
     <div class="g3">
       <div class="f"><label>날짜 열</label><select id="cp_date" style="font-size:13px;padding:8px">${opts}</select></div>
@@ -1302,6 +1355,8 @@ function showColPicker(headers,rows,hdrIdx){
       <button class="btn btn-p" onclick="processCardTxns(window._cpRows,window._cpHdr+1,{date:+$('cp_date').value,merchant:+$('cp_mer').value,amount:+$('cp_amt').value})">이 열로 분석하기</button>
       <button class="btn btn-s" onclick="resetCardImport()">↩️ 다시 선택</button>
     </div>`;
+  $('ci_s1_drop').style.display='none';
+  $('ci_s1_picker').style.display='block';
 }
 
 function processCardTxns(rows,startIdx,cols){
@@ -1425,6 +1480,9 @@ function resetCardImport(){
   _cTxns=[];_cGroups={};
   $('ci_s1').style.display='block';
   $('ci_s2').style.display='none';
+  $('ci_s1_drop').style.display='block';
+  $('ci_s1_picker').style.display='none';
+  $('ci_s1_picker').innerHTML='';
   $('ci_file').value='';
 }
 
@@ -2129,6 +2187,9 @@ window.addEventListener('afterprint',()=>{
 
 // ─── 초기화 ──────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded',()=>{
+  if(typeof pdfjsLib!=='undefined'){
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+  }
   initFixedRowDelete();
   const s=localStorage.getItem('identifi_data');
   if(s){try{const d=JSON.parse(s);applyLoadedData(d);toggleHousing();calcAge();calcSpouseAge();}catch{}}
