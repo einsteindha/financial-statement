@@ -1149,10 +1149,10 @@ function calcCF(){
   const varM=varY/12,fixM=fixY/12,savM=savY/12,princM=princY/12,svM=svY/12,netM=netY/12;
   const kpi=$('cf_kpi');
   if(kpi)kpi.innerHTML=`
-    <div class="kpi"><div class="kpi-l">연 총수입</div><div class="kpi-v">${fmt(iY)}<small style="font-size:12px">만원</small></div></div>
-    <div class="kpi"><div class="kpi-l">저축여력 (월평균)</div><div class="kpi-v ${svM>=0?'ok':'bad'}">${fmt(svM)}<small style="font-size:12px">만원</small></div></div>
-    <div class="kpi"><div class="kpi-l">저축·투자·원금상환 (월)</div><div class="kpi-v ok">${fmt(savM+princM)}<small style="font-size:12px">만원</small></div></div>
-    <div class="kpi"><div class="kpi-l">순현금흐름 (월평균)</div><div class="kpi-v ${netM>=0?'ok':'bad'}">${fmt(netM)}<small style="font-size:12px">만원</small></div></div>
+    <div class="kpi"><div class="kpi-l">연 총수입</div><div class="kpi-v">${fmt(iY)}<small style="font-size:12px">만원</small></div><div style="font-size:11px;color:var(--ink-3);margin-top:3px">월 ${fmt(iM)}<small style="font-size:10px">만원</small></div></div>
+    <div class="kpi"><div class="kpi-l">저축여력 (월)</div><div class="kpi-v ${svM>=0?'ok':'bad'}">${fmt(svM)}<small style="font-size:12px">만원</small></div></div>
+    <div class="kpi"><div class="kpi-l">저축·투자 (월)</div><div class="kpi-v ok">${fmt(savM)}<small style="font-size:12px">만원</small></div>${princM>0?`<div style="font-size:11px;color:var(--ink-3);margin-top:3px">+원금상환 ${fmt(princM)}<small style="font-size:10px">만원</small></div>`:''}</div>
+    <div class="kpi"><div class="kpi-l">순현금흐름 (월)</div><div class="kpi-v ${netM>=0?'ok':'bad'}">${fmt(netM)}<small style="font-size:12px">만원</small></div></div>
   `;
   return{iM,iY,varM,fixM,savM,princM,svM,netM,totExpM:varM+fixM,expRatio:iM>0?(varM+fixM)/iM:0};
 }
@@ -1295,11 +1295,20 @@ async function _parsePDFData(data,password){
         if(!item.str.trim())return;
         const y=Math.round(item.transform[5]);
         if(!yMap[y])yMap[y]=[];
-        yMap[y].push({x:item.transform[4],text:item.str.trim()});
+        yMap[y].push({x:item.transform[4],w:item.width||0,text:item.str.trim()});
       });
       Object.keys(yMap).sort((a,b)=>Number(b)-Number(a)).forEach(y=>{
-        const row=yMap[y].sort((a,b)=>a.x-b.x).map(i=>i.text).filter(Boolean);
-        if(row.length)allRows.push(row);
+        // X 간격(gap)으로 인접 글자를 열로 묶기 (Markany 등 글자별 분리 PDF 대응)
+        const sorted=yMap[y].sort((a,b)=>a.x-b.x);
+        const cols=[];let cur='',curEnd=null;
+        for(const it of sorted){
+          const gap=curEnd!==null?it.x-curEnd:0;
+          if(curEnd!==null&&gap>8){if(cur.trim())cols.push(cur.trim());cur=it.text;}
+          else{cur+=it.text;}
+          curEnd=it.x+(it.w>1?it.w:it.text.length*6);
+        }
+        if(cur.trim())cols.push(cur.trim());
+        if(cols.length)allRows.push(cols);
       });
     }
     const totalText=allRows.flat().join('');
