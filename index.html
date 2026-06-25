@@ -554,12 +554,22 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
       대출 <b>원금 상환</b>은 지출이 아닌 <b>저축·투자</b>로 분류합니다
     </div>
 
+    <!-- ── AI 프롬프트 배너 ── -->
+    <div class="card no-print" style="border:1.5px solid var(--A);margin-bottom:8px;padding:14px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+      <div class="ch-icon" style="background:linear-gradient(135deg,#E8A020,#B07818)">🤖</div>
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:700;color:#92610E">AI 분석 프롬프트</div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:2px">입출금내역을 ChatGPT·Gemini에 첨부하고 아래 프롬프트를 붙여넣으세요</div>
+      </div>
+      <button class="btn btn-s" id="copy_prompt_btn" onclick="copyAIPrompt()" style="font-size:11px;padding:4px 14px;min-height:0;flex-shrink:0">📋 프롬프트 복사</button>
+    </div>
+
     <!-- ── 카드 내역 가져오기 ── -->
     <div class="card no-print" style="border:1.5px solid var(--A);margin-bottom:20px">
       <div class="ch" onclick="toggleImport()" style="cursor:pointer;margin-bottom:0;padding-bottom:0;border-bottom:none;user-select:none">
         <div class="ch-icon" style="background:linear-gradient(135deg,#E8A020,#B07818)">📥</div>
         <div class="ch-text">
-          <h3 style="color:#92610E">카드 지출 내역 자동 가져오기 <span style="font-size:11px;font-weight:400;color:var(--muted)">(선택사항)</span></h3>
+          <h3 style="color:#92610E">카드 지출 내역 가져오기 <span style="font-size:11px;font-weight:400;color:var(--muted)">(선택사항)</span></h3>
           <p>카드사 엑셀·CSV 업로드 → 가맹점별 자동 분류 → 지출 항목 자동 입력</p>
         </div>
         <div style="margin-left:auto;font-size:20px;font-weight:900;color:var(--A)" id="import_arr">＋</div>
@@ -587,15 +597,6 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
             </div>
             <input type="file" id="ci_file" accept=".xlsx,.xls,.csv,.pdf" style="display:none"
                    onchange="handleCardFile(this.files[0])">
-            <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
-              <div style="flex:1;height:1px;background:var(--border)"></div>
-              <span style="font-size:11px;color:var(--muted);white-space:nowrap">또는 AI로 분석</span>
-              <div style="flex:1;height:1px;background:var(--border)"></div>
-            </div>
-            <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-              <span style="font-size:12px;color:var(--ink-3)">PDF를 ChatGPT·Gemini에 첨부하고 아래 프롬프트를 붙여넣으세요</span>
-              <button class="btn btn-s" id="copy_prompt_btn" onclick="copyAIPrompt()" style="font-size:11px;padding:4px 12px;min-height:0">📋 프롬프트 복사</button>
-            </div>
           </div>
           <div id="ci_s1_picker" style="display:none"></div>
         </div>
