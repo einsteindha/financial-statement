@@ -215,7 +215,7 @@ body{font-family:'Noto Sans KR',sans-serif;background:var(--paper);color:var(--i
 
   .dx{font-size:12px;padding:12px 12px}
 
-  .tip::after{white-space:normal;width:180px;left:0;transform:none}
+  .tip:hover::after{white-space:normal;width:180px;left:0;transform:none}
 
   .gl-row{gap:6px}
   .glbtn{padding:5px 12px;font-size:11px}
@@ -559,7 +559,7 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
       <div class="ch-icon" style="background:linear-gradient(135deg,#E8A020,#B07818)">🤖</div>
       <div style="flex:1;min-width:0">
         <div style="font-size:13px;font-weight:700;color:#92610E">AI 분석 프롬프트</div>
-        <div style="font-size:11px;color:var(--ink-3);margin-top:2px">입출금내역을 ChatGPT·Gemini에 첨부하고 아래 프롬프트를 붙여넣으세요</div>
+        <div style="font-size:11px;color:var(--ink-3);margin-top:2px">계좌 입출금내역 또는 카드 지출내역을 ChatGPT·Gemini에 첨부하고 아래 프롬프트를 붙여넣으세요</div>
       </div>
       <button class="btn btn-s" id="copy_prompt_btn" onclick="copyAIPrompt()" style="font-size:11px;padding:4px 14px;min-height:0;flex-shrink:0">📋 프롬프트 복사</button>
     </div>
@@ -701,13 +701,19 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
             <tr class="sub"><td>기타 대출 이자</td>
               <td class="r"><input class="il" type="number" id="e_oint_y" placeholder="0" oninput="calcCF()"></td>
               <td class="r"><input class="ro" id="e_oint_m" readonly></td></tr>
-            <tr class="cat"><td colspan="3">🏦 대출 원금 상환</td></tr>
             <tr class="sub"><td>주택담보대출 원금 상환 <span class="tip" data-tip="고정지출로 표시되지만 빚이 줄어 순자산이 늘어납니다. 저축성향 비율 계산 시 저축으로 반영됩니다. 원금상환 비중이 클수록 유동자산은 늘지 않아 단기 유동성이 낮아질 수 있어요.">?</span></td>
               <td class="r"><input class="il" type="number" id="s_mprin_y" placeholder="0" oninput="calcCF()"></td>
               <td class="r"><input class="ro" id="s_mprin_m" readonly></td></tr>
             <tr class="sub"><td>기타 대출 원금 상환 <span class="tip" data-tip="고정지출로 표시되지만 빚이 줄어 순자산이 늘어납니다. 저축성향 비율 계산 시 저축으로 반영됩니다. 원금상환 비중이 클수록 유동자산은 늘지 않아 단기 유동성이 낮아질 수 있어요.">?</span></td>
               <td class="r"><input class="il" type="number" id="s_oprin_y" placeholder="0" oninput="calcCF()"></td>
               <td class="r"><input class="ro" id="s_oprin_m" readonly></td></tr>
+            <tr class="cat"><td colspan="3">💳 대출 원리금 상환 — 원금·이자 구분이 어려울 때</td></tr>
+            <tr class="sub"><td>주택담보대출 원리금 상환 <span class="tip" data-tip="월 납입 총액(원금+이자)은 알지만 원금과 이자를 구분하기 어려울 때 입력하세요. 원금·이자를 각각 알고 있다면 위의 '이자'·'원금 상환' 항목에 분리 입력하세요. 비율 계산 시 전액 반영됩니다.">?</span></td>
+              <td class="r"><input class="il" type="number" id="s_mamort_y" placeholder="0" oninput="calcCF()"></td>
+              <td class="r"><input class="ro" id="s_mamort_m" readonly></td></tr>
+            <tr class="sub"><td>기타 대출 원리금 상환 <span class="tip" data-tip="월 납입 총액(원금+이자)은 알지만 원금과 이자를 구분하기 어려울 때 입력하세요. 원금·이자를 각각 알고 있다면 위의 '이자'·'원금 상환' 항목에 분리 입력하세요. 비율 계산 시 전액 반영됩니다.">?</span></td>
+              <td class="r"><input class="il" type="number" id="s_oamort_y" placeholder="0" oninput="calcCF()"></td>
+              <td class="r"><input class="ro" id="s_oamort_m" readonly></td></tr>
             <tr class="sub"><td>월세 <span class="kr">한국</span></td>
               <td class="r"><input class="il" type="number" id="e_wolse_y" placeholder="0" oninput="calcCF()"></td>
               <td class="r"><input class="ro" id="e_wolse_m" readonly></td></tr>
@@ -1021,7 +1027,7 @@ let cfMode='yearly';
 const CF_KEYS=['i_my','i_sp','i_biz','i_int','i_rent','i_pen','i_oth',
   'e_my','e_sp','e_kid','e_par','e_food','e_trans','e_comm','e_med','e_lei','e_gift','e_voth',
   'e_ins','e_mint','e_oint','e_wolse','e_util','e_foth',
-  's_mprin','s_oprin','s_dep','s_fund','s_pen','s_isa','s_sub','s_oth'];
+  's_mprin','s_oprin','s_mamort','s_oamort','s_dep','s_fund','s_pen','s_isa','s_sub','s_oth'];
 // 연간 비정기 지출 항목 (월간 모드에서도 연간 입력 유지)
 const CF_ANNUAL_FIX=['e_tax_y','e_carins_y','e_annual_y'];
 
@@ -1113,7 +1119,8 @@ function calcCF(){
   const iM=iY/12;
   const varY=gY('e_my')+gY('e_sp')+gY('e_kid')+gY('e_par')+gY('e_food')+gY('e_trans')+gY('e_comm')+gY('e_med')+gY('e_lei')+gY('e_gift')+gY('e_voth')+gCustY('ve');
   const princY=gY('s_mprin')+gY('s_oprin');
-  const fixY=gY('e_ins')+gY('e_mint')+gY('e_oint')+gY('e_wolse')+gY('e_util')+gY('e_foth')+annualFixY+gCustY('fe_mon')+gCustY('fe')+princY;
+  const amortY=gY('s_mamort')+gY('s_oamort');
+  const fixY=gY('e_ins')+gY('e_mint')+gY('e_oint')+gY('e_wolse')+gY('e_util')+gY('e_foth')+annualFixY+gCustY('fe_mon')+gCustY('fe')+princY+amortY;
   const savY=gY('s_dep')+gY('s_fund')+gY('s_pen')+gY('s_isa')+gY('s_sub')+gY('s_oth')+gCustY('sv');
   const svY=iY-varY-fixY, netY=svY-savY;
 
@@ -1147,15 +1154,15 @@ function calcCF(){
   $('extra_sav_m').textContent=extraY>0?fmt(extraY/12):'—';
   $('extra_sav_tr').style.opacity=extraY>0?'1':'.4';
 
-  const varM=varY/12,fixM=fixY/12,savM=savY/12,princM=princY/12,svM=svY/12,netM=netY/12;
+  const varM=varY/12,fixM=fixY/12,savM=savY/12,princM=princY/12,amortM=amortY/12,svM=svY/12,netM=netY/12;
   const kpi=$('cf_kpi');
   if(kpi)kpi.innerHTML=`
     <div class="kpi"><div class="kpi-l">연 총수입</div><div class="kpi-v">${fmt(iY)}<small style="font-size:12px">만원</small></div><div style="font-size:11px;color:var(--ink-3);margin-top:3px">월 ${fmt(iM)}<small style="font-size:10px">만원</small></div></div>
     <div class="kpi"><div class="kpi-l">저축여력 (월)</div><div class="kpi-v ${svM>=0?'ok':'bad'}">${fmt(svM)}<small style="font-size:12px">만원</small></div></div>
-    <div class="kpi"><div class="kpi-l">저축·투자 (월)</div><div class="kpi-v ok">${fmt(savM)}<small style="font-size:12px">만원</small></div>${princM>0?`<div style="font-size:11px;color:var(--ink-3);margin-top:3px">+원금상환 ${fmt(princM)}<small style="font-size:10px">만원</small></div>`:''}</div>
+    <div class="kpi"><div class="kpi-l">저축·투자 (월)</div><div class="kpi-v ok">${fmt(savM)}<small style="font-size:12px">만원</small></div>${princM>0?`<div style="font-size:11px;color:var(--ink-3);margin-top:3px">+원금상환 ${fmt(princM)}<small style="font-size:10px">만원</small></div>`:''}${amortM>0?`<div style="font-size:11px;color:var(--ink-3);margin-top:2px">+원리금상환 ${fmt(amortM)}<small style="font-size:10px">만원</small></div>`:''}</div>
     <div class="kpi"><div class="kpi-l">순현금흐름 (월)</div><div class="kpi-v ${netM>=0?'ok':'bad'}">${fmt(netM)}<small style="font-size:12px">만원</small></div></div>
   `;
-  return{iM,iY,varM,fixM,savM,princM,svM,netM,totExpM:varM+fixM,expRatio:iM>0?(varM+fixM)/iM:0};
+  return{iM,iY,varM,fixM,savM,princM,amortM,svM,netM,totExpM:varM+fixM,expRatio:iM>0?(varM+fixM)/iM:0};
 }
 
 // ─── 카드 내역 가져오기 ──────────────────────────────────
@@ -1548,33 +1555,33 @@ function applyCardImport(){
 }
 
 function copyAIPrompt(){
-  const prompt=`첨부한 카드·계좌 거래내역 PDF를 분석해줘.
+  const prompt=`첨부한 카드·계좌 거래내역을 분석해줘.
 
 [분류 규칙]
 출금(지출) 거래만 대상으로 하고, 아래 비목에 맞게 분류해.
-이체·ATM출금·저금통·세이프박스·달러박스·MMF·적금·충전은 '제외'로 처리.
+계좌이체·ATM출금·저축·적금·저금통·파킹·CMA·MMF·펀드·충전·카드대금은 '제외'로 처리.
 
 비목:
-① 식비 — 식당, 카페, 커피, 편의점(GS25·씨유·세븐), 배달앱, 마트
-② 교통비 — 카카오T·택시, 지하철, 기차(KTX·SRT), 주유, 주차
-③ 의료비 — 병원, 의원, 약국, 치과, 한의원, 통증·재활 클리닉
-④ 여가·문화·여행 — 영화, 숙박, 항공, 넷플릭스 등 구독, 도서, 운동
-⑤ 통신비 — 휴대폰, 인터넷, SKT·KT·LGU+
-⑥ 생활비·쇼핑 — 의류, 쇼핑몰(쿠팡 등), 미용실, 올리브영
-⑦ 자녀 교육·보육 — 학원, 유치원, 교재
-⑧ 부모님 지원 — 부모님 이름으로 이체한 건
-⑨ 경조사·선물
-⑩ 보험료 — 카드 자동납 보험
-⑪ 관리비·공과금 — 전기·가스·수도·아파트 관리비
+① 식비 — 식당, 카페, 커피, 편의점(GS25·CU·세븐일레븐 등), 배달앱, 마트, 슈퍼
+② 교통비 — 택시, 대중교통(지하철·버스), 기차(KTX·SRT), 주유, 주차
+③ 의료비 — 병원, 의원, 약국, 치과, 한의원, 재활·통증 클리닉
+④ 여가·문화·여행 — 영화, 숙박, 항공, 구독서비스(넷플릭스 등), 도서, 운동·헬스
+⑤ 통신비 — 휴대폰 요금, 인터넷, 통신사(SKT·KT·LGU+ 등)
+⑥ 생활비·쇼핑 — 의류, 온라인쇼핑(쿠팡·G마켓 등), 미용실, 드럭스토어, 반려동물
+⑦ 자녀 교육·보육 — 학원, 유치원, 어린이집, 교재·문구
+⑧ 부모님 지원 — 부모님 성함으로 이체하거나 부모님 관련 지출
+⑨ 경조사·선물 — 경조금, 선물, 화환
+⑩ 보험료 — 자동이체·자동납 보험료
+⑪ 관리비·공과금 — 전기·가스·수도·난방·아파트 관리비, 공과금
 
 [출력 형식]
-아래 표로 출력해줘. 기간이 12개월이 아니면 12개월로 연환산.
+아래 표로 출력해줘. 분석 기간이 12개월이 아니면 12개월 기준으로 연환산해.
 
 | 비목 | 연간(만원) | 월평균(만원) | 주요 거래처 |
 |------|-----------|------------|-----------|
 (각 비목 행)
 | 합계(제외 제외) | | | |
-| 제외(이체·ATM 등) | | | |
+| 제외(이체·저축 등) | | | |
 
 마지막에 "분류 불확실한 항목"도 따로 알려줘.`;
   navigator.clipboard.writeText(prompt).then(()=>{
@@ -1814,11 +1821,11 @@ function calcAll(){
   const monthlyExp=cf.varM+cf.fixM;
   const efRatio=monthlyExp>0?liqAsset/monthlyExp:0;
   const debtRatio=bs.aTotal>0?bs.lTotal/bs.aTotal:0;
-  const totalDebtSvc=v('e_mint_y')/12+v('e_oint_y')/12+v('s_mprin_y')/12+v('s_oprin_y')/12;
+  const totalDebtSvc=v('e_mint_y')/12+v('e_oint_y')/12+v('s_mprin_y')/12+v('s_oprin_y')/12+v('s_mamort_y')/12+v('s_oamort_y')/12;
   const dsr=iM>0?totalDebtSvc/iM:0;
-  const housingDebtSvc=v('e_mint_y')/12+v('s_mprin_y')/12;
+  const housingDebtSvc=v('e_mint_y')/12+v('s_mprin_y')/12+v('s_mamort_y')/12;
   const housingRatio=iM>0?housingDebtSvc/iM:0;
-  const consDebtSvc=v('e_oint_y')/12+v('s_oprin_y')/12;
+  const consDebtSvc=v('e_oint_y')/12+v('s_oprin_y')/12+v('s_oamort_y')/12;
   const consRatio=iM>0?consDebtSvc/iM:0;
   const savRate=iM>0?(cf.savM+cf.princM)/iM:0;
   const investRatio=bs.aTotal>0?bs.aInv/bs.aTotal:0;
@@ -1851,12 +1858,12 @@ function calcAll(){
        v:pct(dsr),bench:'건전 기준 36% 이하',pv:dsr/0.36,
        cls:dsr<=0.36?'ok':dsr<=0.5?'warn':'bad',
        st:dsr<=0.36?'✅ 상환 부담이 적정해요':dsr<=0.5?'⚠️ 상환 부담이 높아요':'🚨 상환 부담이 과중해요',
-       why:'월 소득 중 모든 대출 원리금 합계 비율(DSR). 36% 초과 시 생활이 빠듯해지고 추가 대출도 어렵습니다.'},
+       why:`월 소득 중 모든 대출 원리금 합계 비율(DSR)${cf.amortM>0?' — 원리금 통합 입력분 '+fmt(cf.amortM)+'만원/월 포함':''}. 36% 초과 시 생활이 빠듯해지고 추가 대출도 어렵습니다.`},
       {grp:'안정성',q:'집 관련 대출 상환이 얼마나 되나요?',
        v:pct(housingRatio),bench:'건전 기준 28% 이하',pv:housingRatio/0.28,
        cls:housingRatio<=0.28?'ok':housingRatio<=0.4?'warn':'bad',
        st:housingRatio<=0.28?'✅ 주거 부담이 적정해요':'⚠️ 주거 부담이 다소 높아요',
-       why:'월 수입 대비 주택 대출 원리금 비율. 28% 이하여야 다른 생활과 저축도 여유 있게 가능합니다.'},
+       why:`월 수입 대비 주택 대출 원리금 비율${v('s_mamort_y')>0?' — 주담대 원리금 통합 입력분 '+fmt(v('s_mamort_y')/12)+'만원/월 포함':''}. 28% 이하여야 다른 생활과 저축도 여유 있게 가능합니다.`},
       {grp:'안정성',q:'소비성 대출(신용대출 등)은 얼마나 되나요?',
        v:pct(consRatio),bench:'건전 기준 20% 이하',pv:consRatio/0.2,
        cls:consRatio<=0.2?'ok':consRatio<=0.3?'warn':'bad',
