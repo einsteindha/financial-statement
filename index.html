@@ -587,6 +587,15 @@ a.tool-card:hover{border-color:var(--gold);box-shadow:0 2px 12px rgba(196,147,63
             </div>
             <input type="file" id="ci_file" accept=".xlsx,.xls,.csv,.pdf" style="display:none"
                    onchange="handleCardFile(this.files[0])">
+            <div style="display:flex;align-items:center;gap:10px;margin-top:14px">
+              <div style="flex:1;height:1px;background:var(--border)"></div>
+              <span style="font-size:11px;color:var(--muted);white-space:nowrap">또는 AI로 분석</span>
+              <div style="flex:1;height:1px;background:var(--border)"></div>
+            </div>
+            <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+              <span style="font-size:12px;color:var(--ink-3)">PDF를 ChatGPT·Gemini에 첨부하고 아래 프롬프트를 붙여넣으세요</span>
+              <button class="btn btn-s" id="copy_prompt_btn" onclick="copyAIPrompt()" style="font-size:11px;padding:4px 12px;min-height:0">📋 프롬프트 복사</button>
+            </div>
           </div>
           <div id="ci_s1_picker" style="display:none"></div>
         </div>
@@ -1487,6 +1496,45 @@ function applyCardImport(){
   alert(`✅ ${Object.keys(fieldTotals).length}개 항목 반영 완료!\n\n직접 추가 입력이 필요한 것:\n• 현금 지출 (국세청 홈택스 → 현금영수증 내역)\n• 배우자 카드가 따로 있다면 별도 업로드\n• 대출 이자·원금 상환액`);
   resetCardImport();
   toggleImport();
+}
+
+function copyAIPrompt(){
+  const prompt=`첨부한 카드·계좌 거래내역 PDF를 분석해줘.
+
+[분류 규칙]
+출금(지출) 거래만 대상으로 하고, 아래 비목에 맞게 분류해.
+이체·ATM출금·저금통·세이프박스·달러박스·MMF·적금·충전은 '제외'로 처리.
+
+비목:
+① 식비 — 식당, 카페, 커피, 편의점(GS25·씨유·세븐), 배달앱, 마트
+② 교통비 — 카카오T·택시, 지하철, 기차(KTX·SRT), 주유, 주차
+③ 의료비 — 병원, 의원, 약국, 치과, 한의원, 통증·재활 클리닉
+④ 여가·문화·여행 — 영화, 숙박, 항공, 넷플릭스 등 구독, 도서, 운동
+⑤ 통신비 — 휴대폰, 인터넷, SKT·KT·LGU+
+⑥ 생활비·쇼핑 — 의류, 쇼핑몰(쿠팡 등), 미용실, 올리브영
+⑦ 자녀 교육·보육 — 학원, 유치원, 교재
+⑧ 부모님 지원 — 부모님 이름으로 이체한 건
+⑨ 경조사·선물
+⑩ 보험료 — 카드 자동납 보험
+⑪ 관리비·공과금 — 전기·가스·수도·아파트 관리비
+
+[출력 형식]
+아래 표로 출력해줘. 기간이 12개월이 아니면 12개월로 연환산.
+
+| 비목 | 연간(만원) | 월평균(만원) | 주요 거래처 |
+|------|-----------|------------|-----------|
+(각 비목 행)
+| 합계(제외 제외) | | | |
+| 제외(이체·ATM 등) | | | |
+
+마지막에 "분류 불확실한 항목"도 따로 알려줘.`;
+  navigator.clipboard.writeText(prompt).then(()=>{
+    const btn=$('copy_prompt_btn');
+    const orig=btn.textContent;
+    btn.textContent='✅ 복사됨!';
+    btn.style.color='var(--teal)';
+    setTimeout(()=>{btn.textContent=orig;btn.style.color='';},2000);
+  }).catch(()=>alert('복사 실패. 브라우저 권한을 확인해주세요.'));
 }
 
 function resetCardImport(){
